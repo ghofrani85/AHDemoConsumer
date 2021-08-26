@@ -20,73 +20,301 @@ table.center {
 	<div id="outer" style="text-align:center">
 		<h1>Receive specific messages from MongoDB.</h1>
 		<h2>Fetch messages by date and topic:</h2>
-		<p style="font-size: large;">Note that the times of the messages
-			in MongoDB are in UTC.</p>
-		<p style="font-size: large;">The dates must be in the following
-			format: yyyy-MM-ddTHH:mm:ss.SSSXXX</p>
-		<p style="font-size: large;">Example: 2018-06-12T19:30</p>
-		<form id="form">
-			<label id="Thelabel">Start date:</label> <input type="datetime-local"
-				id="start-date" name="meeting-time" value="2021-06-15T14:09">
-
-			<label id="Thelabel">End date:</label> <input type="datetime-local"
-				id="end-date" name="meeting-time" value="2021-06-18T10:59">
-
-			<label id="TheLabel">Topic:</label> <input type="text" id="topic"
+		
+		<form>
+			<label>Topic:</label> <input type="text" id="topic"
 				name="topic" value="mySensor">
+		</form>
+		<form>
+		<h3>Pick a start date and time:</h3>
+			<label for="start">Start date:</label>
+
+			<input type="date" id="start" name="trip-start"
+			       value="2021-06-15">
+			<div class="fallbackDateTimePicker">
+		      <span>
+		        <label for="hour">Hour:</label>
+		        <select id="hour1" name="hour">
+		        </select>
+		      </span>
+		      <span>
+		        <label for="minute">Minute:</label>
+		        <select id="minute1" name="minute">
+		        </select>
+		      </span>
+		    </div>
+		    <h3>Pick an end date and time:</h3>
+		    <label for="end">End date:</label>
+
+			<input type="date" id="end" name="trip-start"
+			       value="2021-09-15">
+			<div class="fallbackDateTimePicker">
+		      <span>
+		        <label for="hour">Hour:</label>
+		        <select id="hour2" name="hour">
+		        </select>
+		      </span>
+		      <span>
+		        <label for="minute">Minute:</label>
+		        <select id="minute2" name="minute">
+		        </select>
+		      </span>
+		    </div>
 		</form>
 		<br>
 
-		<button class="button" id="button1" onclick="getFunctionTable()">
-			<span id="span1">Show Messages</span>
+		<button class="button" onclick="getMessageTable()">
+			<span>Show Messages</span>
 		</button>
 
 
-		<button class="button" id="button2" onclick="getFunctionChart()">
-			<span id="span1">Show diagram</span>
+		<button class="button" onclick="getChart()">
+			<span>Show diagram</span>
 		</button>
 		
 		<h2>Fetch Images from the database by Filename:</h2>
 		
 		<form>
-			<label id="AnotherLabel">Filename:</label> <input type="text"
-				id="image" value="example-image">
+			<label>Filename:</label> <input type="text"
+				id="image" value="Test_image">
 		</form>
 		<br>
-		<button class="button" id="button3" onclick="getImage()">
-			<span id="span1">Show the Image</span>
+		<button class="button" onclick="getImage()">
+			<span>Show the Image</span>
 		</button>
 		<br>
+		<h2>Fetch Images from the database by their upload date:</h2>
+		<form>
+		<h3>Pick a start date and time:</h3>
+			<label for="start2">Start date:</label>
+
+			<input type="date" id="startImage" name="trip-start"
+			       value="2021-06-15">
+			<div class="fallbackDateTimePicker">
+		      <span>
+		        <label for="hour">Hour:</label>
+		        <select id="hour3" name="hour">
+		        </select>
+		      </span>
+		      <span>
+		        <label for="minute">Minute:</label>
+		        <select id="minute3" name="minute">
+		        </select>
+		      </span>
+		    </div>
+		    <h3>Pick an end date and time:</h3>
+		    <label for="end2">End date:</label>
+
+			<input type="date" id="endImage" name="trip-start"
+			       value="2021-09-15">
+			<div class="fallbackDateTimePicker">
+		      <span>
+		        <label for="hour">Hour:</label>
+		        <select id="hour4" name="hour">
+		        </select>
+		      </span>
+		      <span>
+		        <label for="minute">Minute:</label>
+		        <select id="minute4" name="minute">
+		        </select>
+		      </span>
+		    </div>
+		 </form>
 		<br>
+		<button class="button" onclick="getTheImages()">
+			<span>Show the Images</span>
+		</button>
+		<br>
+		
 		<img id="img" />
 		
 		<div id="chartStyle" style="height: 500px; text-align:center">
 			<canvas id="chart"></canvas>
 		</div>
 		
-
+		<br>
 		<table class="center" id="myData" style="width: 50%"></table>
 
 
 		<script type="text/javascript">
+		
+		// Date time picker
+		var fallbackPicker = document.querySelector('.fallbackDateTimePicker');
+		
+		// hide fallback initially
+		fallbackPicker.style.display = 'block';
+		populateHours();
+		populateMinutes();
+		
+		function populateHours() {
+		  // populate the hours <select> with the 24 hours of the day
+		  // make hour picker for all 4 hour pickers
+		  var hourSelect1 = document.querySelector('#hour1');
+		  var hourSelect2 = document.querySelector('#hour2');
+		  var hourSelect3 = document.querySelector('#hour3');
+		  var hourSelect4 = document.querySelector('#hour4');
+		  for(var i = 0; i <= 23; i++) {
+		    var option1 = document.createElement('option');
+		    var option2 = document.createElement('option');
+		    var option3 = document.createElement('option');
+		    var option4 = document.createElement('option');
+		    option1.textContent = (i < 10) ? ("0" + i) : i;
+		    option2.textContent = (i < 10) ? ("0" + i) : i;
+		    option3.textContent = (i < 10) ? ("0" + i) : i;
+		    option4.textContent = (i < 10) ? ("0" + i) : i;
+		    hourSelect1.appendChild(option1);
+		    hourSelect2.appendChild(option2);
+		    hourSelect3.appendChild(option3);
+		    hourSelect4.appendChild(option4);
+		  }
+		}
 
-		function getFunctionTable() {
-		    startdate = document.getElementById("start-date").value;
-		    enddate = document.getElementById("end-date").value;
+		function populateMinutes() {
+		  // populate the minutes <select> with the 60 hours of each minute
+		  // make minute picker for alle 4 minute picker
+		  for(var i = 0; i <= 59; i++) {
+			var minuteSelect1 = document.querySelector('#minute1');
+			var minuteSelect2 = document.querySelector('#minute2');
+			var minuteSelect3 = document.querySelector('#minute3');
+			var minuteSelect4 = document.querySelector('#minute4');
+		    var option1 = document.createElement('option');
+		    var option2 = document.createElement('option');
+		    var option3 = document.createElement('option');
+		    var option4 = document.createElement('option');
+		    option1.textContent = (i < 10) ? ("0" + i) : i;
+		    option2.textContent = (i < 10) ? ("0" + i) : i;
+		    option3.textContent = (i < 10) ? ("0" + i) : i;
+		    option4.textContent = (i < 10) ? ("0" + i) : i;
+		    minuteSelect1.appendChild(option1);
+		    minuteSelect2.appendChild(option2);
+		    minuteSelect3.appendChild(option3);
+		    minuteSelect4.appendChild(option4);
+		  }
+		}
+		
+		// Receive all images from a specific time range
+		function getTheImages() {
+			
+			// Get the start date
+			startday = document.getElementById("startImage").value;
+		    starthour = document.getElementById("hour3").value;
+		    startminute = document.getElementById("minute3").value;
+		    startdate = startday+'T'+starthour+':'+startminute;
+		    
+		    // Get the end date
+		    endday = document.getElementById("endImage").value;
+		    endhour = document.getElementById("hour4").value;
+		    endminute = document.getElementById("minute4").value;
+		    enddate = endday+'T'+endhour+':'+endminute;
+		    
+		    // Remove current Table, Chart and image on the html page
+			removeDataTable();
+		    removeDataChart();
+		    removeImage();
+		    
+		    // Create table to place the images, dates and filenames in it
+		    createTable();
+		    
+		    // Call the /FileNames URL with startdate and enddate to receive all filenames in this date range
+            fetch('http://localhost:8081/FileNames?d1='+startdate+':00.000%2B00:00&d2='+enddate+':00.000%2B00:00')
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                appendImages(data);
+            })
+            .catch(function (err) {
+                console.log('error: ' + err);
+            });
+			
+		}
+		
+		function appendImages(data) {
+			
+			// Create table where to place the images, filenames and dates
+			var table = document.getElementById("myData");
+            var outer = document.getElementById("outer");
+            table.setAttribute("class", "center");
+            table.setAttribute("id", "myData");
+            var tr = document.createElement("tr");
+            var thf = document.createElement("th"); // Filename
+            var thd = document.createElement("th"); // Date
+            var thi = document.createElement("th"); // image
+            
+            // 3 Columns
+            thf.innerHTML = 'Filename';
+            thd.innerHTML = 'Upload date';
+            thi.innerHTML = 'Image';
+            
+            // Append table parts
+            tr.appendChild(thf);
+            tr.appendChild(thd);
+            tr.appendChild(thi);
+            table.appendChild(tr);
+            
+            // go through each filename
+            data.forEach(element => {
+            	var tr1 = document.createElement("tr");
+            	var tdf = document.createElement("td"); // Filename
+            	var tdd = document.createElement("td"); // Dates
+                var tdi = document.createElement("td"); // Images
+            	var img = document.createElement("img"); // img-tag
+            	
+            	tdf.innerHTML = element.filename; // Place the filename
+            	tdd.innerHTML = element.date; // Place the date
+				
+            	// make the url to get an image by filename in the img-tag
+            	var url = 'http://localhost:8081/imageData/?filename='+element.filename;
+            	img.setAttribute("src", url);
+            	tdi.appendChild(img);
+            	
+            	tr1.appendChild(tdf);
+            	tr1.appendChild(tdd);
+                tr1.appendChild(tdi);
+                table.appendChild(tr1);
+            });
+            
+            outer.appendChild(table);
+            
+            // Create Diagram and Image tags
+            createDiagram();
+		    createImage();
+		}
+		
+		// Get the table of messages
+		function getMessageTable() {
+		    
+			// Get the input topic
 		    topic = document.getElementById("topic").value;
 		    
+		    // Get the input startdate
+		    startday = document.getElementById("start").value;
+		    starthour = document.getElementById("hour1").value;
+		    startminute = document.getElementById("minute1").value;
+		    startdate = startday+'T'+starthour+':'+startminute;
+		    
+		    // Get the input enddate
+		    endday = document.getElementById("end").value;
+		    endhour = document.getElementById("hour2").value;
+		    endminute = document.getElementById("minute2").value;
+		    enddate = endday+'T'+endhour+':'+endminute;
+	   		
+		    // Remove current table, chart and image
 		    removeDataTable();
 		    removeDataChart();
 		    removeImage();
+		    
+		    // Create table for the messages
 		    createTable();
 		    
-		    
-		    
+		    // Change behind end date to %2B00:00
+		    // Call the jsonData-URL with startdate, enddate and topic to receive Messages
             fetch('http://localhost:8081/jsonData?d1='+startdate+':00.000%2B00:00&d2='+enddate+':00.000%2B02:00&topic='+topic)
             .then(function (response) {
                 return response.json();
             })
             .then(function (data) {
+            	// Call function to make a table with messages and dates
                 appendDataTable(data);
             })
             .catch(function (err) {
@@ -95,23 +323,39 @@ table.center {
 		    
 		}
 		
-		function getFunctionChart() {
-		    startdate = document.getElementById("start-date").value;
-		    enddate = document.getElementById("end-date").value;
+		// get the Chart of message values
+		function getChart() {
+			
+			// get the input startdate
+			startday = document.getElementById("start").value;
+		    starthour = document.getElementById("hour1").value;
+		    startminute = document.getElementById("minute1").value;
+		    startdate = startday+'T'+starthour+':'+startminute;
+		    
+		    // get the input enddate
+		    endday = document.getElementById("end").value;
+		    endhour = document.getElementById("hour2").value;
+		    endminute = document.getElementById("minute2").value;
+		    enddate = endday+'T'+endhour+':'+endminute;
 		    topic = document.getElementById("topic").value;
 		    
+		    // remove current table, chart and image
 		    removeDataTable();
 		    removeDataChart();
 		    removeImage();
+		    
+		    // Create Diagram, table and image
 		    createDiagram();
 		    createTable();
 		    createImage();
 		    
+		    // Call the jsonData-URL with startdate, enddate and topic to receive Messages
             fetch('http://localhost:8081/jsonData?d1='+startdate+':00.000%2B00:00&d2='+enddate+':00.000%2B02:00&topic='+topic)
             .then(function (response) {
                 return response.json();
             })
             .then(function (data) {
+            	// Call function to make a chart with messages and dates
                 showDiagram(data);
             })
             .catch(function (err) {
@@ -120,11 +364,13 @@ table.center {
 		
 		}
 		
+		// Receive an image by filename
 		function getImage() {
 		    var outer = document.getElementById("outer");
 			imagename = document.getElementById("image").value;
 			var img = document.getElementById("img");
 			
+			// Remove current table, chart and image
 			removeDataTable();
 		    removeDataChart();
 		    removeImage();
@@ -166,10 +412,12 @@ table.center {
             outer.appendChild(table);
 		}
 		
+		// Make a chart with messages and dates
 		function showDiagram(mydata) {
 			const xlabels = [];
 			const ydata = [];
 			
+			// go through data to receive date and message
 			mydata.forEach(element =>{
 				xlabels.push(element.date);
 				ydata.push(element.message);
@@ -199,33 +447,39 @@ table.center {
 		}
 		
 		function appendDataTable(data) {
+			
+			// Create table where to place the messages, topic and dates
             var table = document.getElementById("myData");
             var outer = document.getElementById("outer");
             table.setAttribute("class", "center");
             table.setAttribute("id", "myData");
             var tr = document.createElement("tr");
-            var thm = document.createElement("th");
-            var tht = document.createElement("th");
-            var thd = document.createElement("th");
+            var thm = document.createElement("th"); // message
+            var tht = document.createElement("th"); // topic
+            var thd = document.createElement("th"); // date
+            
+            // 3 columns
             thm.innerHTML = 'Message';
             tht.innerHTML = 'Topic';
             thd.innerHTML = 'Date';
             
+            // append table parts
             tr.appendChild(thm);
             tr.appendChild(tht);
             tr.appendChild(thd);
             table.appendChild(tr);
             
-            
+            // go through each message
             data.forEach(element => {
             	var div = document.createElement("div");
             	var tr1 = document.createElement("tr");
-            	var tdm = document.createElement("td");
-                var tdt = document.createElement("td");
-                var tdd = document.createElement("td");
-                tdm.innerHTML = element.message;
-                tdt.innerHTML = element.topic;
-                tdd.innerHTML = element.date;
+            	var tdm = document.createElement("td"); // message
+                var tdt = document.createElement("td"); // topic
+                var tdd = document.createElement("td"); // date
+                
+                tdm.innerHTML = element.message; // place the message
+                tdt.innerHTML = element.topic; // place the topic
+                tdd.innerHTML = element.date; // place the date
                 
                 tr1.appendChild(tdm);
                 tr1.appendChild(tdt);

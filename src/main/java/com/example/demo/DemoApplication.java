@@ -35,7 +35,6 @@ import com.mongodb.MongoClient;
 @SpringBootApplication
 public class DemoApplication {
 	
-	private static String address;
 	public static MqttClient client;
 	public static String mqttServerAndTopic;
 

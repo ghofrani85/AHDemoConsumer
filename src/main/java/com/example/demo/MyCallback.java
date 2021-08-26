@@ -37,9 +37,12 @@ public class MyCallback implements MqttCallback
 	    
 	    if (topic.equals("Image")) {
 	    	System.out.println("An image arrived.");
+	    	
+	    	// Insert the incoming image into the database
 	    	ConnectionManager.insertImageToDB(message, topic);
 	    } else {
 	    	System.out.println("Arrived message: "+message);
+	    	
 		    // Insert message, topic and date into database
 		    String messageAsString = ""+message;	
 		    ConnectionManager.insertDocToDB(topic, messageAsString, date);

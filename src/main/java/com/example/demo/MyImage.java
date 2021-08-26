@@ -4,13 +4,13 @@ import java.util.Date;
 
 public class MyImage {
 	private Date date;
-	private String imageString;
+	private String filename;
 	
 	// Constructor
-	public MyImage(Date date, String imageString) {
+	public MyImage(Date date, String filename) {
 		super();
 		this.date = date;
-		this.imageString = imageString;
+		this.filename = filename;
 	}
 	
 	// Getters and Setters
@@ -22,12 +22,12 @@ public class MyImage {
 		this.date = date;
 	}
 
-	public String getImageString() {
-		return imageString;
+	public String getfilename() {
+		return filename;
 	}
 
-	public void setImageString(String imageString) {
-		this.imageString = imageString;
+	public void setfilename(String filename) {
+		this.filename = filename;
 	}
 	
 	

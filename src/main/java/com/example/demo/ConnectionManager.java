@@ -76,7 +76,8 @@ public class ConnectionManager {
 
 		return myMongoClient;
 	}
-
+	
+	// Insert a message into the database
 	public static void insertDocToDB(String topic, String message, Date date) {
 
 		// Build connection to mongo database
@@ -87,7 +88,6 @@ public class ConnectionManager {
 		DBCollection mycoll = mydb.getCollection("received_messages");
 
 		// Create new mongo database document with the message, topic and date
-
 		DBObject document = new BasicDBObject();
 		document.put("topic", topic);
 		document.put("message", message);
@@ -100,7 +100,8 @@ public class ConnectionManager {
 		System.out.println("Document successfully inserted into database");
 
 	}
-
+	
+	// Insert an image into the database
 	public static void insertImageToDB(MqttMessage msg, String topic) {
 		
 		// Build connection to mongo database
@@ -110,7 +111,7 @@ public class ConnectionManager {
 		DB mydb = myMongoClient.getDB("mqtt_db");
 		DBCollection mycoll = mydb.getCollection("received_messages");
 		
-		
+		// Cast MqttMessage to String
 		String theMessage = new String(msg.getPayload());
 		System.out.println("The arrived image as string: "+theMessage);
 		
@@ -126,59 +127,46 @@ public class ConnectionManager {
         GridFS gfsPhoto = new GridFS(mydb, topic);
 
         GridFSInputFile gfsFile;
-		try {
-			gfsFile = gfsPhoto.createFile(imageByte);
-			
-			// set a new filename for identifying purpose
-	        gfsFile.setFilename(newFileName);
-	        
-	        // Set additional meta information
-	        DBObject document = new BasicDBObject();
-			document.put("topic", topic);
-	        gfsFile.setMetaData(document);
-	        
-	        // save the image to the database
-	        gfsFile.save();
-	        
-	        // additionally insert document into received_messages-collection - necessary?
-	        mycoll.insert(gfsFile);
-	        
-	        // print all images in the Image namespace
-	        DBCursor cursor = gfsPhoto.getFileList();
-	        while (cursor.hasNext()) {
-	            System.out.println(cursor.next());
-	        }
-	        
-	        // get an image of the database and write it in the file system
-	        // get image file by its file name
-            GridFSDBFile imageForOutput = gfsPhoto.findOne(newFileName);
-            
-            // Get the id of an image!
-            //ObjectId bla = (ObjectId)imageForOutput.getId();
-
-            // save it into a new image file
-            imageForOutput.writeTo("C:\\Image\\testdb.jpg");
-            
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		gfsFile = gfsPhoto.createFile(imageByte);
 		
-
+		// set the filename
+        gfsFile.setFilename(newFileName);
         
+        // Set additional meta information
+        DBObject document = new BasicDBObject();
+		document.put("topic", topic);
+        gfsFile.setMetaData(document);
+        
+        // save the image to the database
+        gfsFile.save();
+        
+        // print all images in the Image namespace
+        DBCursor cursor = gfsPhoto.getFileList();
+        while (cursor.hasNext()) {
+            System.out.println(cursor.next());
+        }
+        
+        // For testing: get an image of the database and write it in the file system
+        /*
+        // get image file by its file name
+        GridFSDBFile imageForOutput = gfsPhoto.findOne(newFileName);
+        
+        // save it into a new image file
+        imageForOutput.writeTo("C:\\Image\\testdb.jpg");
+        */
 	}
 
+	// Read specific messages of a date range from the database to json format
 	public static List<MyMessage> readFromDBtoJSON(Date startDate, Date endDate, DBCollection collection, String top) {
 
-		// Find data in specific date range
+		// Find data of a certain topic in specific date range
 		BasicDBObject getQuery = new BasicDBObject();
 		getQuery.append("time_stamp", new BasicDBObject("$gte", startDate).append("$lte", endDate));
 		getQuery.append("topic", top);
 		DBCursor cursor = collection.find(getQuery);
 		List<MyMessage> responseList = new LinkedList<>();
-		System.out.println(cursor);
 
-		// Iterate over whole collection
+		// Iterate over the whole found collection and add the messages to responseList
 		while (cursor.hasNext()) {
 			String nojson = "" + cursor.next();
 			String message = JsonPath.read(nojson, "$.message");
@@ -202,4 +190,36 @@ public class ConnectionManager {
 		return responseList;
 	}
 	
+	// Read the names and dates of images from database of specific time range
+	public static List<MyImage> readImageNames(Date startDate, Date endDate, DBCollection collection){
+		
+		// Find data in specific date range
+		BasicDBObject getQuery = new BasicDBObject();
+		getQuery.append("uploadDate", new BasicDBObject("$gte", startDate).append("$lte", endDate));
+		DBCursor cursor = collection.find(getQuery);
+		List<MyImage> responseList = new LinkedList<>();
+
+		// Iterate over the whole found collection and add the filenames and dates to responseList
+		while (cursor.hasNext()) {
+			String nojson = "" + cursor.next();
+			String filename = JsonPath.read(nojson, "$.filename");
+			String date = JsonPath.read(nojson, "$.uploadDate.$date");
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+
+			Date date1 = new Date();
+
+			try {
+				date1 = format.parse(date);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			MyImage img = new MyImage(date1, filename);
+			
+			responseList.add(img);
+		}
+
+		return responseList;
+	}
 }
